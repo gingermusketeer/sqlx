@@ -127,8 +127,8 @@ impl Connect for MySqlConnection {
 
             let command = match env::var("TRY_COMMAND") {
                 Ok(val) => val,
-                Err(e) => "",
-            }
+                Err(e) => "".to_string(),
+            };
             match command.as_str() {
                 "separate" => {
             conn.execute(r#"
@@ -147,11 +147,7 @@ impl Connect for MySqlConnection {
                     "#).await?;
                 },
                 _ => {},
-            }
-            conn.execute(r#"
-            SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'));
-            SET time_zone = '+00:00';
-                    "#).await?;
+            };
 
             Ok(conn)
         })
