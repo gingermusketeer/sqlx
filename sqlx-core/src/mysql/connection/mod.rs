@@ -122,12 +122,11 @@ impl Connect for MySqlConnection {
 
             // --
 
-            // https://mathiasbynens.be/notes/mysql-utf8mb4
+            // https://mathiasbynens.be/notes/mysql-utf8mb4 (Only supported by mysql >= 5.5.3)
 
             conn.execute(r#"
             SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'));
             SET time_zone = '+00:00';
-            SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
                     "#).await?;
 
             Ok(conn)
