@@ -1,6 +1,7 @@
 use std::fmt::{self, Debug, Formatter};
 use std::net::Shutdown;
 use std::sync::Arc;
+use std::env;
 
 use futures_core::future::BoxFuture;
 use futures_util::FutureExt;
@@ -124,6 +125,29 @@ impl Connect for MySqlConnection {
 
             // https://mathiasbynens.be/notes/mysql-utf8mb4 (Only supported by mysql >= 5.5.3)
 
+            let command = match env::var("TRY_COMMAND") {
+                Ok(val) => val,
+                Err(e) => "",
+            }
+            match command.as_str() {
+                "separate" => {
+            conn.execute(r#"
+            SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'));
+                    "#).await?;
+            conn.execute(r#"
+            SET time_zone = '+00:00';
+                    "#).await?;
+                },
+                "separate_colon" => {
+            conn.execute(r#"
+            SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'))
+                    "#).await?;
+            conn.execute(r#"
+            SET time_zone = '+00:00'
+                    "#).await?;
+                },
+                _ => {},
+            }
             conn.execute(r#"
             SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'));
             SET time_zone = '+00:00';
